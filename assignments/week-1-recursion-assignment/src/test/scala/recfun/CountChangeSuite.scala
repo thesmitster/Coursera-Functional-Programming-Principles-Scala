@@ -9,6 +9,18 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class CountChangeSuite extends FunSuite {
   import Main.countChange
+  test("countChange 1, [1]") {
+    assert(countChange(1,List(1)) === 1)
+  }
+
+  test("countChange 0, [1, 2, 5, 10]") {
+    assert(countChange(0, List(1,2,5,10)) === 1)
+  }
+
+  test("countChange 1, [0]") {
+    assert(countChange(1, List()) === 0)
+  }
+
   test("countChange: example given in instructions") {
     assert(countChange(4,List(1,2)) === 3)
   }
@@ -24,5 +36,4 @@ class CountChangeSuite extends FunSuite {
   test("countChange: unsorted CHF") {
     assert(countChange(300,List(500,5,50,100,20,200,10)) === 1022)
   }
-
 }
