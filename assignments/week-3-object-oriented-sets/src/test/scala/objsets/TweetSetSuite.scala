@@ -63,6 +63,12 @@ class TweetSetSuite extends FunSuite {
     }
   }
 
+  test("most retweeted") {
+    new TestSets {
+      assert(set5.mostRetweeted.retweets === 20)
+    }
+  }
+
   test("descending: set5") {
     new TestSets {
       val trends = set5.descendingByRetweet
@@ -71,4 +77,11 @@ class TweetSetSuite extends FunSuite {
     }
   }
 
+  test("trending") {
+    new TestSets {
+      assert(GoogleVsApple.googleTweets.descendingByRetweet.head.retweets === 290)
+      assert(GoogleVsApple.appleTweets.descendingByRetweet.head.retweets === 321)
+      assert(GoogleVsApple.trending.head.retweets === 321)
+    }
   }
+}
