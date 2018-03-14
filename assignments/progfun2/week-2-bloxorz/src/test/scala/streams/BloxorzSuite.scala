@@ -42,6 +42,17 @@ class BloxorzSuite extends FunSuite {
     val optsolution = List(Right, Right, Down, Right, Right, Right, Down)
   }
 
+  test("trying some vector shit") {
+    new Level1 {
+      val v = Vector(level.split("\n").map(str => Vector(str: _*)): _*)
+      val srow: Option[Int] = (for {line ← v if line.contains('S')} yield line.indexOf('S')).headOption
+      val scol: Option[Int] = (for {line ← v if line.contains('S')} yield v.indexOf(line)).headOption
+
+      srow, scol match {
+        case Some(row), Some(col) ⇒ println 
+      }
+    }
+  }
 
 	test("terrain function level 1") {
     new Level1 {
