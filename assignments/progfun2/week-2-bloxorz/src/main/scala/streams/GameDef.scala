@@ -28,12 +28,12 @@ trait GameDef {
    *
    *   row axis
    */
-  case class Pos(row: Int, col: Int) {
+  case class Position(row: Int, col: Int) {
     /** The position obtained by changing the `row` coordinate by `d` */
-    def deltaRow(d: Int): Pos = copy(row = row + d)
+    def deltaRow(d: Int): Position = copy(row = row + d)
 
     /** The position obtained by changing the `col` coordinate by `d` */
-    def deltaCol(d: Int): Pos = copy(col = col + d)
+    def deltaCol(d: Int): Position = copy(col = col + d)
   }
 
   /**
@@ -42,13 +42,13 @@ trait GameDef {
    * This value is left abstract, it will be defined in concrete
    * instances of the game.
    */
-  val startPos: Pos
+  val startPos: Position
 
   /**
    * The target position where the block has to go.
    * This value is left abstract.
    */
-  val goal: Pos
+  val goal: Position
 
   /**
    * The terrain is represented as a function from positions to
@@ -58,13 +58,13 @@ trait GameDef {
    * As explained in the documentation of class `Pos`, the `row` axis
    * is the vertical one and increases from top to bottom.
    */
-  type Terrain = Pos => Boolean
+  type Terrain = Position => Boolean
 
 
   /**
    * The terrain of this game. This value is left abstract.
    */
-  val terrain: Terrain
+  val isInsideMap: Terrain
 
 
   /**
@@ -77,77 +77,91 @@ trait GameDef {
   case object Up    extends Move
   case object Down  extends Move
 
+  case class BlockMove(block: Block, move: Move)
+
   /**
    * This function returns the block at the start position of
    * the game.
    */
-  def startBlock: Block = ???
+  def startBlock: Block = Block(startPos, startPos)
 
 
   /**
    * A block is represented by the position of the two cubes that
-   * it consists of. We make sure that `b1` is lexicographically
-   * smaller than `b2`.
+   * it consists of. We make sure that `cube1` is lexicographically
+   * smaller than `cube2`.
    */
-  case class Block(b1: Pos, b2: Pos) {
+  case class Block(cube1: Position, cube2: Position) {
 
     // checks the requirement mentioned above
-    require(b1.row <= b2.row && b1.col <= b2.col, "Invalid block position: b1=" + b1 + ", b2=" + b2)
+    require(cube1.row <= cube2.row && cube1.col <= cube2.col, "Invalid block position: cube1=" + cube1 + ", cube2=" + cube2)
 
     /**
-     * Returns a block where the `row` coordinates of `b1` and `b2` are
+     * Returns a block where the `row` coordinates of `cube1` and `cube2` are
      * changed by `d1` and `d2`, respectively.
      */
-    def deltaRow(d1: Int, d2: Int) = Block(b1.deltaRow(d1), b2.deltaRow(d2))
+    private def deltaRow(delta1: Int, delta2: Int) = Block(cube1.deltaRow(delta1), cube2.deltaRow(delta2))
 
     /**
-     * Returns a block where the `col` coordinates of `b1` and `b2` are
+     * Returns a block where the `col` coordinates of `cube1` and `cube2` are
      * changed by `d1` and `d2`, respectively.
      */
-    def deltaCol(d1: Int, d2: Int) = Block(b1.deltaCol(d1), b2.deltaCol(d2))
-
+    private def deltaCol(delta1: Int, delta2: Int) = Block(cube1.deltaCol(delta1), cube2.deltaCol(delta2))
 
     /** The block obtained by moving left */
-    def left = if (isStanding)             deltaCol(-2, -1)
-               else if (b1.row == b2.row)  deltaCol(-1, -2)
-               else                        deltaCol(-1, -1)
+    def getLeftBlock: Block =
+      if (isStanding) deltaCol(-2, -1)
+      else if (cube1.row == cube2.row) deltaCol(-1, -2)
+      else deltaCol(-1, -1)
 
     /** The block obtained by moving right */
-    def right = if (isStanding)            deltaCol(1, 2)
-                else if (b1.row == b2.row) deltaCol(2, 1)
-                else                       deltaCol(1, 1)
+    def getRightBlock: Block =
+      if (isStanding) deltaCol(1, 2)
+      else if (cube1.row == cube2.row) deltaCol(2, 1)
+      else deltaCol(1, 1)
 
     /** The block obtained by moving up */
-    def up = if (isStanding)               deltaRow(-2, -1)
-             else if (b1.row == b2.row)    deltaRow(-1, -1)
-             else                          deltaRow(-1, -2)
+    def getUpBlock: Block =
+      if (isStanding) deltaRow(-2, -1)
+      else if (cube1.row == cube2.row) deltaRow(-1, -1)
+      else deltaRow(-1, -2)
 
     /** The block obtained by moving down */
-    def down = if (isStanding)             deltaRow(1, 2)
-               else if (b1.row == b2.row)  deltaRow(1, 1)
-               else                        deltaRow(2, 1)
-
+    def getDownBlock: Block =
+      if (isStanding) deltaRow(1, 2)
+      else if (cube1.row == cube2.row) deltaRow(1, 1)
+      else deltaRow(2, 1)
 
     /**
      * Returns the list of blocks that can be obtained by moving
      * the current block, together with the corresponding move.
      */
-    def neighbors: List[(Block, Move)] = ???
+    def neighbors: List[BlockMove] = List(
+      BlockMove(this.getLeftBlock, Left),
+      BlockMove(this.getRightBlock, Right),
+      BlockMove(this.getDownBlock, Down),
+      BlockMove(this.getUpBlock, Up)
+    )
 
     /**
      * Returns the list of positions reachable from the current block
      * which are inside the terrain.
      */
-    def legalNeighbors: List[(Block, Move)] = ???
+    def legalNeighbors: List[BlockMove] =
+      for {
+        neighbor ← neighbors
+        if neighbor.block.isLegal
+      } yield neighbor
 
     /**
      * Returns `true` if the block is standing.
+     * This is true if the two cubes of the block occupy the same position.
      */
-    def isStanding: Boolean = ???
+    def isStanding: Boolean = this.cube1 == this.cube2
 
     /**
      * Returns `true` if the block is entirely inside the terrain.
      */
-    def isLegal: Boolean = ???
+    def isLegal: Boolean = isInsideMap(cube1) && isInsideMap(cube2)
   }
 }

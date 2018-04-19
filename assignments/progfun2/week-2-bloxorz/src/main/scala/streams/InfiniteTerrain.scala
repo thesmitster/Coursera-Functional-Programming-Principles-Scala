@@ -11,5 +11,5 @@ package streams
  * restrictions.
  */
 trait InfiniteTerrain extends GameDef {
-  val terrain: Terrain = (pos: Pos) => true
+  val isInsideMap: Terrain = (pos: Position) => true
 }

@@ -6,11 +6,12 @@ import common._
  * This component implements the solver for the Bloxorz game
  */
 trait Solver extends GameDef {
+  case class BlockState(block: Block, history: List[Move])
 
   /**
    * Returns `true` if the block `b` is at the final position
    */
-  def done(b: Block): Boolean = ???
+  def done(b: Block): Boolean = b.isStanding && b.cube1 == goal
 
   /**
    * This function takes two arguments: the current block `b` and
@@ -28,15 +29,24 @@ trait Solver extends GameDef {
    * It should only return valid neighbors, i.e. block positions
    * that are inside the terrain.
    */
-  def neighborsWithHistory(b: Block, history: List[Move]): Stream[(Block, List[Move])] = ???
+  def neighborsWithHistory(bs: BlockState): Stream[BlockState] = {
+    val result: List[BlockState] = for {
+      neighbor ← bs.block.legalNeighbors
+    } yield BlockState(neighbor.block, neighbor.move :: bs.history)
+
+    result.toStream
+  }
 
   /**
    * This function returns the list of neighbors without the block
    * positions that have already been explored. We will use it to
    * make sure that we don't explore circular paths.
    */
-  def newNeighborsOnly(neighbors: Stream[(Block, List[Move])],
-                       explored: Set[Block]): Stream[(Block, List[Move])] = ???
+  def newNeighborsOnly(neighbors: Stream[BlockState], explored: Set[Block]): Stream[BlockState] =
+    for {
+      neighbor ← neighbors
+      if !(explored contains neighbor.block)
+    } yield neighbor
 
   /**
    * The function `from` returns the stream of all possible paths
@@ -61,19 +71,29 @@ trait Solver extends GameDef {
    * of different paths - the implementation should naturally
    * construct the correctly sorted stream.
    */
-  def from(initial: Stream[(Block, List[Move])],
-           explored: Set[Block]): Stream[(Block, List[Move])] = ???
+  def from(initial: Stream[BlockState], explored: Set[Block]): Stream[BlockState] = ???
+/*
+    for {
+      state ← initial
+      neighbor ← newNeighborsOnly(neighborsWithHistory(state), explored)
+    } yield from(neighbor #:: Stream.empty, explored + neighbor.block)
+*/
 
   /**
    * The stream of all paths that begin at the starting block.
    */
-  lazy val pathsFromStart: Stream[(Block, List[Move])] = ???
+  lazy val pathsFromStart: Stream[BlockState] = {
+    val startState: BlockState = BlockState(startBlock, Nil)
+    val startStream: Stream[BlockState] = startState #:: Stream.empty
+    from(startStream, Set())
+  }
 
   /**
    * Returns a stream of all possible pairs of the goal block along
    * with the history how it was reached.
    */
-  lazy val pathsToGoal: Stream[(Block, List[Move])] = ???
+  lazy val pathsToGoal: Stream[BlockState] =
+    pathsFromStart.filter( bs ⇒ done(bs.block))
 
   /**
    * The (or one of the) shortest sequence(s) of moves to reach the
@@ -83,5 +103,6 @@ trait Solver extends GameDef {
    * the first move that the player should perform from the starting
    * position.
    */
-  lazy val solution: List[Move] = ???
+  lazy val solution: List[Move] =
+    pathsToGoal.sortWith(_.history.length < _.history.length).head.history
 }
