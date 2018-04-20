@@ -81,15 +81,34 @@ class BloxorzSuite extends FunSuite {
       val ns: Set[BlockState] = neighborsWithHistory(startState).toSet
       val nsCheckResults = Set(
         BlockState(Block(Position(0, -2), Position(0, -1)), List(Left)),
-        BlockState(Block(Position(0, 1),Position(0, 2)), List(Right)),
-        BlockState(Block(Position(1, 0),Position(2, 0)), List(Down)),
-        BlockState(Block(Position(-2, 0),Position(-1, 0)), List(Up))
+        BlockState(Block(Position(0, 1), Position(0, 2)), List(Right)),
+        BlockState(Block(Position(1, 0), Position(2, 0)), List(Down)),
+        BlockState(Block(Position(-2, 0), Position(-1, 0)), List(Up))
       )
       assert(nsCheckResults == ns)
 
       // see below for newNeighborsOnly checking
 
       // check functionality of `from`
+      val initialStream: Stream[BlockState] = streamsFromInitial(Stream(startState), Set())
+
+      // we'll check the first 8 results
+      val initialStreamResults: List[BlockState] = List(
+        initialStream.head, initialStream(1), initialStream(2), initialStream(3), initialStream(4), initialStream(5),
+        initialStream(6), initialStream(7), initialStream(8)
+      )
+      val initialStreamCheckResults = List(
+        BlockState(Block(Position(0, 0), Position(0, 0)), List()),
+        BlockState(Block(Position(0, -2), Position(0, -1)), List(Left)),
+        BlockState(Block(Position(0, 1), Position(0, 2)), List(Right)),
+        BlockState(Block(Position(-2, 0), Position(-1, 0)), List(Up)),
+        BlockState(Block(Position(1, 0), Position(2, 0)), List(Down)),
+        BlockState(Block(Position(0, -3), Position(0, -3)), List(Left, Left)),
+        BlockState(Block(Position(0, 0), Position(0, 0)), List(Right, Left)),
+        BlockState(Block(Position(-1, -2), Position(-1, -1)), List(Up, Left)),
+        BlockState(Block(Position(1, -2), Position(1, -1)), List(Down, Left))
+      )
+      assert(initialStreamResults == initialStreamCheckResults)
     }
   }
 
@@ -106,7 +125,7 @@ class BloxorzSuite extends FunSuite {
       // check functionality of newNeighbors when there is an explored block already
       val exploredBlocks = Set(Block(Position(1, 2), Position(1, 3)))
       val newNeighbors2: Stream[BlockState] = newNeighborsOnly(neighbors, exploredBlocks)
-      val expectedNewNeighbors2 = Set(BlockState(Block(Position(2, 1),Position(3, 1)), List(Down)))
+      val expectedNewNeighbors2 = Set(BlockState(Block(Position(2, 1), Position(3, 1)), List(Down)))
       assert(expectedNewNeighbors2 == newNeighbors2.toSet)
 
     }
@@ -133,7 +152,7 @@ class BloxorzSuite extends FunSuite {
       assert(goal == Position(4, 7))
     }
   }
-/*
+
   test("optimal solution for level 1") {
     new Level1 {
       assert(solve(solution) == Block(goal, goal))
@@ -144,5 +163,5 @@ class BloxorzSuite extends FunSuite {
     new Level1 {
       assert(solution.length == optsolution.length)
     }
-  }*/
+  }
 }

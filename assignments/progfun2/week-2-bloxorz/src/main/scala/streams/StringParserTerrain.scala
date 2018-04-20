@@ -1,8 +1,5 @@
 package streams
 
-import com.sun.org.apache.xpath.internal.functions.FuncFalse
-import common._
-
 /**
   * This component implements a parser to define terrains from a
   * graphical ASCII representation.
@@ -12,10 +9,10 @@ import common._
   *
   * val level =
   * """------
-  *   |--ST--
-  *   |--oo--
-  *   |--oo--
-  *   |------""".stripMargin
+  * |--ST--
+  * |--oo--
+  * |--oo--
+  * |------""".stripMargin
   *
   * - The `-` character denotes parts which are outside the terrain
   * - `o` denotes fields which are part of the terrain
@@ -43,8 +40,8 @@ trait StringParserTerrain extends GameDef {
     *
     * val level =
     * """ST
-    *   |oo
-    *   |oo""".stripMargin
+    * |oo
+    * |oo""".stripMargin
     *
     * is represented as
     *
@@ -56,9 +53,11 @@ trait StringParserTerrain extends GameDef {
     */
   def terrainFunction(levelVector: LevelVector): Terrain = pos ⇒ {
     try {
-      levelVector(pos.row)(pos.col) != '-'
+      val result = levelVector(pos.row)(pos.col) != '-'
+      result
     } catch {
-      case _: IndexOutOfBoundsException ⇒ false
+      case _: IndexOutOfBoundsException ⇒
+        false
     }
   }
 

@@ -1,28 +1,28 @@
 package streams
 
 /**
- * A main object that can be used to execute the Bloxorz solver
- */
+  * A main object that can be used to execute the Bloxorz solver
+  */
 object Bloxorz extends App {
 
   /**
-   * A level constructed using the `InfiniteTerrain` trait which defines
-   * the terrain to be valid at every position.
-   */
+    * A level constructed using the `InfiniteTerrain` trait which defines
+    * the terrain to be valid at every position.
+    */
   object InfiniteLevel extends Solver with InfiniteTerrain {
-    val startPos = Position(1,3)
-    val goal = Position(5,8)
+    val startPos = Position(1, 3)
+    val goal = Position(5, 8)
   }
 
-  println(InfiniteLevel.solution)
+  //println(InfiniteLevel.solution)
 
   /**
-   * A simple level constructed using the StringParserTerrain
-   */
+    * A simple level constructed using the StringParserTerrain
+    */
   abstract class Level extends Solver with StringParserTerrain
 
   object Level0 extends Level {
-    val level =
+    val level: String =
       """------
         |--ST--
         |--oo--
@@ -33,10 +33,10 @@ object Bloxorz extends App {
   println(Level0.solution)
 
   /**
-   * Level 1 of the official Bloxorz game
-   */
+    * Level 1 of the official Bloxorz game
+    */
   object Level1 extends Level {
-    val level =
+    val level: String =
       """ooo-------
         |oSoooo----
         |ooooooooo-
